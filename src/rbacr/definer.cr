@@ -6,18 +6,18 @@ module Rbacr::Definer
     extend Rbacr::Authorizer
 
     def self.role(name : Symbol, privileges : Array(Rbacr::Privilege)) : Rbacr::Role
-      role = Rbacr::Role.new(name: name, privileges: privileges)
+      role = Rbacr::Role.new(name, privileges)
       Rbacr::Definer::ROLE_MAP[name.to_s] = role
       role
     end
 
     def self.role_of(name : String | Symbol) : Rbacr::Role
       key = name.to_s
-      Rbacr::Definer::ROLE_MAP[key]? || raise Rbacr::UnknownRoleError.new(role_name: key)
+      Rbacr::Definer::ROLE_MAP[key]? || raise Rbacr::UnknownRoleError.new(key)
     end
 
     def self.privileges_of(name : String | Symbol) : Array(Rbacr::Privilege)
-      role_of(name: name).privileges
+      role_of(name).privileges
     end
   end
 end

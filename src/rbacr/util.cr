@@ -13,9 +13,9 @@ module Rbacr::Util
     when Symbol
       resource.to_s
     when Class
-      normalize_class_name(class_ref: resource)
+      normalize_class_name(resource)
     else
-      normalize_class_name(class_ref: resource.class)
+      normalize_class_name(resource.class)
     end
   end
 
@@ -26,7 +26,7 @@ module Rbacr::Util
     when Array(String)
       roles
     else
-      raise ArgumentError.new(message: "Roles must be String or Array(String)")
+      raise ArgumentError.new("Roles must be String or Array(String)")
     end
   end
 end

@@ -13,7 +13,7 @@ class Rbacr::Privilege
   def matches?(act : Rbacr::Act, resource) : Bool
     return false unless @act == act
 
-    @resource == Rbacr::Util.normalize_resource(resource: resource)
+    @resource == Rbacr::Util.normalize_resource(resource)
   end
 
   def matches?(privilege_id : String | Symbol) : Bool
@@ -34,8 +34,6 @@ class Rbacr::Privilege
   end
 
   private def generate_id : String
-    action_str = @act.action.to_s
-    resource_str = @resource.downcase
-    "can_#{action_str}_#{resource_str}"
+    "can_#{@act}_#{@resource}"
   end
 end

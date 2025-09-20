@@ -14,8 +14,8 @@ class Rbacr::Role
     @privileges.any? { |p| p.id == privilege_str }
   end
 
-  def has_privilege?(act : Rbacr::Act, object) : Bool
-    @privileges.any? { |p| p.matches?(act: act, resource: object) }
+  def has_privilege?(act : Rbacr::Act, resource) : Bool
+    @privileges.any? { |p| p.matches?(act, resource) }
   end
 
   def privilege_ids : Array(String)
