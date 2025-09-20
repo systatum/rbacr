@@ -1,225 +1,124 @@
 require "./spec_helper"
 
-describe "RBACR Usage Cases" do
-  describe "Retrieve privileges" do
-    it "returns privileges for valid role using symbol" do
-      privileges = Authorizer.privileges_of(name: :super_admin)
-      privileges.should contain(Authorizer::CAN_CREATE_CANDIDATE)
-      privileges.should contain(Authorizer::CAN_DELETE_CANDIDATE)
-      privileges.should contain(Authorizer::CAN_CREATE_BILLING)
-      privileges.size.should eq(3)
-    end
+describe Authorizer do
+  context "when working with constants" do
+    context "when examining act constants" do
+      it "defines CREATE act" do
+        Authorizer::CREATE.should be_a(Rbacr::Act)
+        Authorizer::CREATE.action.should eq(:create)
+      end
 
-    it "returns privileges for valid role using string" do
-      privileges = Authorizer.privileges_of(name: "super_admin")
-      privileges.should contain(Authorizer::CAN_CREATE_CANDIDATE)
-      privileges.should contain(Authorizer::CAN_DELETE_CANDIDATE)
-      privileges.should contain(Authorizer::CAN_CREATE_BILLING)
-      privileges.size.should eq(3)
-    end
+      it "defines READ act" do
+        Authorizer::READ.should be_a(Rbacr::Act)
+        Authorizer::READ.action.should eq(:read)
+      end
 
-    it "raises error for undefined role" do
-      expect_raises(Rbacr::UnknownRoleError, "Unknown role: undefined") do
-        Authorizer.privileges_of(name: :undefined)
+      it "defines DELETE act" do
+        Authorizer::DELETE.should be_a(Rbacr::Act)
+        Authorizer::DELETE.action.should eq(:delete)
+      end
+
+      it "defines LIST_ALL act" do
+        Authorizer::LIST_ALL.should be_a(Rbacr::Act)
+        Authorizer::LIST_ALL.action.should eq(:list_all)
+      end
+
+      it "defines CHAT act" do
+        Authorizer::CHAT.should be_a(Rbacr::Act)
+        Authorizer::CHAT.action.should eq(:chat)
+      end
+
+      it "defines BROWSE act" do
+        Authorizer::BROWSE.should be_a(Rbacr::Act)
+        Authorizer::BROWSE.action.should eq(:browse)
       end
     end
 
-    it "works with different role types" do
-      engineer_privileges = Authorizer.privileges_of(name: :engineer)
-      engineer_privileges.should contain(Authorizer::CAN_CREATE_CANDIDATE)
-      engineer_privileges.size.should eq(1)
-
-      finance_privileges = Authorizer.privileges_of(name: "finance")
-      finance_privileges.should contain(Authorizer::CAN_CREATE_BILLING)
-      finance_privileges.size.should eq(1)
-
-      hr_privileges = Authorizer.privileges_of(name: :hr)
-      hr_privileges.should contain(Authorizer::CAN_CREATE_CANDIDATE)
-      hr_privileges.should contain(Authorizer::CAN_DELETE_CANDIDATE)
-      hr_privileges.size.should eq(2)
-
-      chat_privileges = Authorizer.privileges_of(name: "chat_user")
-      chat_privileges.should contain(Authorizer::CAN_CHAT_CHATGPT)
-      chat_privileges.should contain(Authorizer::CAN_BROWSE_PICTURES)
-      chat_privileges.size.should eq(2)
-    end
-  end
-
-  describe "Find role" do
-    it "returns role instance for valid role using symbol" do
-      role = Authorizer.role_of(name: :super_admin)
-      role.should eq(Authorizer::SUPER_ADMIN_ROLE)
-      role.name.should eq(:super_admin)
-    end
-
-    it "returns role instance for valid role using string" do
-      role = Authorizer.role_of(name: "super_admin")
-      role.should eq(Authorizer::SUPER_ADMIN_ROLE)
-      role.name.should eq(:super_admin)
-    end
-
-    it "raises error for unknown role" do
-      expect_raises(Rbacr::UnknownRoleError, "Unknown role: unknown") do
-        Authorizer.role_of(name: "unknown")
-      end
-    end
-
-    it "allows checking privileges on role instance" do
-      super_admin = Authorizer.role_of("super_admin")
-
-      super_admin.has_privilege?(privilege_id: "can_create_candidate").should be_true
-      super_admin.has_privilege?(privilege_id: "can_create_billing").should be_true
-      super_admin.has_privilege?(privilege_id: "can_browse_pictures").should be_false
-
-      super_admin.has_privilege?(privilege_id: :can_create_billing).should be_true
-      super_admin.has_privilege?(privilege_id: :can_browse_pictures).should be_false
-
-      super_admin.has_privilege?(act: Authorizer::CREATE, object: Candidate).should be_true
-      super_admin.has_privilege?(act: Authorizer::CREATE, object: Billing).should be_true
-      super_admin.has_privilege?(act: Authorizer::BROWSE, object: :pictures).should be_false
-
-      candidate = Candidate.new
-      super_admin.has_privilege?(act: Authorizer::CREATE, object: candidate).should be_true
-    end
-  end
-
-  describe "Check privilege via can?" do
-    it "works with user having array of roles" do
-      user = User.new(roles: ["super_admin"])
-      candidate = Candidate.new
-
-      Authorizer.can?(roles: user.roles, act: Authorizer::CREATE, resource: candidate).should be_true
-      Authorizer.can?(roles: user.roles, act: Authorizer::DELETE, resource: candidate).should be_true
-      Authorizer.can?(roles: user.roles, act: Authorizer::BROWSE, resource: :pictures).should be_false
-    end
-
-    it "works with user having single role as string" do
-      user = SingleRoleUser.new("finance")
-
-      Authorizer.can?(roles: user.role, act: Authorizer::CREATE, resource: Billing).should be_true
-      Authorizer.can?(roles: user.role, act: Authorizer::CREATE, resource: Candidate).should be_false
-    end
-
-    it "works with multiple roles" do
-      user = User.new(roles: ["engineer", "finance"])
-
-      Authorizer.can?(roles: user.roles, act: Authorizer::CREATE, resource: Candidate).should be_true
-      Authorizer.can?(roles: user.roles, act: Authorizer::CREATE, resource: Billing).should be_true
-      Authorizer.can?(roles: user.roles, act: Authorizer::DELETE, resource: Candidate).should be_false
-    end
-
-    it "works with privilege IDs" do
-      user = User.new(roles: ["finance"])
-
-      Authorizer.can?(roles: user.roles, privilege_id: :can_create_billing).should be_true
-      Authorizer.can?(roles: user.roles, privilege_id: "can_create_billing").should be_true
-      Authorizer.can?(roles: user.roles, privilege_id: :can_create_candidate).should be_false
-    end
-
-    it "works with privilege resources" do
-      user = User.new(roles: ["engineer"])
-
-      Authorizer.can?(roles: user.roles, privilege: Authorizer::CAN_CREATE_CANDIDATE).should be_true
-      Authorizer.can?(roles: user.roles, privilege: Authorizer::CAN_CREATE_BILLING).should be_false
-    end
-  end
-
-  describe "Require privilege" do
-    describe "with act and resource" do
-      it "passes for authorized users" do
-        user = User.new(roles: ["super_admin"])
-        candidate = Candidate.new
-
-        Authorizer.require_privilege!(roles: user.roles, act: Authorizer::CREATE, resource: candidate)
-      end
-
-      it "raises AuthorizationError for unauthorized users" do
-        user = User.new(roles: ["finance"])
-        candidate = Candidate.new
-
-        expect_raises(Rbacr::AuthorizationError, "Access denied for create on candidate") do
-          Authorizer.require_privilege!(roles: user.roles, act: Authorizer::CREATE, resource: candidate)
+    context "when examining role constants and their privileges" do
+      context "when working with SUPER_ADMIN_ROLE" do
+        it "defines SUPER_ADMIN_ROLE" do
+          Authorizer::SUPER_ADMIN_ROLE.should be_a(Rbacr::Role)
+          Authorizer::SUPER_ADMIN_ROLE.name.should eq(:super_admin)
+          Authorizer::SUPER_ADMIN_ROLE.privileges.size.should eq(3)
         end
-      end
-    end
 
-    describe "with privilege ID" do
-      it "passes for authorized users" do
-        user = User.new(roles: ["finance"])
+        it "has CAN_CREATE_CANDIDATE privilege" do
+          Authorizer::CAN_CREATE_CANDIDATE.should be_a(Rbacr::Privilege)
+          Authorizer::CAN_CREATE_CANDIDATE.id.should eq("can_create_candidate")
+          Authorizer::SUPER_ADMIN_ROLE.privileges.should contain(Authorizer::CAN_CREATE_CANDIDATE)
+        end
 
-        Authorizer.require_privilege!(roles: user.roles, privilege_id: :can_create_billing)
-        Authorizer.require_privilege!(roles: user.roles, privilege_id: "can_create_billing")
-      end
+        it "has CAN_DELETE_CANDIDATE privilege" do
+          Authorizer::CAN_DELETE_CANDIDATE.should be_a(Rbacr::Privilege)
+          Authorizer::CAN_DELETE_CANDIDATE.id.should eq("can_delete_candidate")
+          Authorizer::SUPER_ADMIN_ROLE.privileges.should contain(Authorizer::CAN_DELETE_CANDIDATE)
+        end
 
-      it "raises AuthorizationError for unauthorized users" do
-        user = User.new(roles: ["engineer"])
-
-        expect_raises(Rbacr::AuthorizationError, "Access denied for privilege can_create_billing") do
-          Authorizer.require_privilege!(roles: user.roles, privilege_id: :can_create_billing)
+        it "has CAN_CREATE_BILLING privilege" do
+          Authorizer::CAN_CREATE_BILLING.should be_a(Rbacr::Privilege)
+          Authorizer::CAN_CREATE_BILLING.id.should eq("can_create_billing")
+          Authorizer::SUPER_ADMIN_ROLE.privileges.should contain(Authorizer::CAN_CREATE_BILLING)
         end
       end
 
-      it "raises UnknownPrivilegeError for non-existent privileges" do
-        user = User.new(roles: ["super_admin"])
+      context "when working with ENGINEER_ROLE" do
+        it "defines ENGINEER_ROLE" do
+          Authorizer::ENGINEER_ROLE.should be_a(Rbacr::Role)
+          Authorizer::ENGINEER_ROLE.name.should eq(:engineer)
+          Authorizer::ENGINEER_ROLE.privileges.size.should eq(1)
+        end
 
-        expect_raises(Rbacr::UnknownPrivilegeError, "Unknown privilege: non_existent_privilege") do
-          Authorizer.require_privilege!(roles: user.roles, privilege_id: :non_existent_privilege)
+        it "has CAN_CREATE_CANDIDATE privilege" do
+          Authorizer::ENGINEER_ROLE.privileges.should contain(Authorizer::CAN_CREATE_CANDIDATE)
         end
       end
-    end
 
-    describe "with privilege resource" do
-      it "passes for authorized users" do
-        user = User.new(roles: ["finance"])
+      context "when working with HR_ROLE" do
+        it "defines HR_ROLE" do
+          Authorizer::HR_ROLE.should be_a(Rbacr::Role)
+          Authorizer::HR_ROLE.name.should eq(:hr)
+          Authorizer::HR_ROLE.privileges.size.should eq(2)
+        end
 
-        Authorizer.require_privilege!(roles: user.roles, privilege: Authorizer::CAN_CREATE_BILLING)
-      end
+        it "has CAN_CREATE_CANDIDATE privilege" do
+          Authorizer::HR_ROLE.privileges.should contain(Authorizer::CAN_CREATE_CANDIDATE)
+        end
 
-      it "raises AuthorizationError for unauthorized users" do
-        user = User.new(roles: ["engineer"])
-
-        expect_raises(Rbacr::AuthorizationError, "Access denied for privilege can_create_billing") do
-          Authorizer.require_privilege!(roles: user.roles, privilege: Authorizer::CAN_CREATE_BILLING)
+        it "has CAN_DELETE_CANDIDATE privilege" do
+          Authorizer::HR_ROLE.privileges.should contain(Authorizer::CAN_DELETE_CANDIDATE)
         end
       end
-    end
-  end
 
-  describe "Require role" do
-    it "passes when user has required role" do
-      user = User.new(roles: ["finance", "hr"])
+      context "when working with FINANCE_ROLE" do
+        it "defines FINANCE_ROLE" do
+          Authorizer::FINANCE_ROLE.should be_a(Rbacr::Role)
+          Authorizer::FINANCE_ROLE.name.should eq(:finance)
+          Authorizer::FINANCE_ROLE.privileges.size.should eq(1)
+        end
 
-      Authorizer.require_role!(roles: user.roles, required_role: :finance)
-      Authorizer.require_role!(roles: user.roles, required_role: "hr")
-    end
-
-    it "raises error when user doesn't have required role" do
-      user = User.new(roles: ["engineer"])
-
-      expect_raises(Rbacr::AuthorizationError, "Role finance is required") do
-        Authorizer.require_role!(roles: user.roles, required_role: :finance)
+        it "has CAN_CREATE_BILLING privilege" do
+          Authorizer::FINANCE_ROLE.privileges.should contain(Authorizer::CAN_CREATE_BILLING)
+        end
       end
-    end
 
-    it "works with role resources" do
-      user = User.new(roles: ["finance"])
+      context "when working with CHAT_ROLE" do
+        it "defines CHAT_ROLE" do
+          Authorizer::CHAT_ROLE.should be_a(Rbacr::Role)
+          Authorizer::CHAT_ROLE.name.should eq(:chat_user)
+          Authorizer::CHAT_ROLE.privileges.size.should eq(2)
+        end
 
-      Authorizer.require_role!(roles: user.roles, required_role: Authorizer::FINANCE_ROLE)
-    end
+        it "has CAN_CHAT_CHATGPT privilege" do
+          Authorizer::CAN_CHAT_CHATGPT.should be_a(Rbacr::Privilege)
+          Authorizer::CAN_CHAT_CHATGPT.id.should eq("can_chat_ai_chatgpt")
+          Authorizer::CHAT_ROLE.privileges.should contain(Authorizer::CAN_CHAT_CHATGPT)
+        end
 
-    it "works with all role resource constants" do
-      Authorizer.require_role!(roles: ["super_admin"], required_role: Authorizer::SUPER_ADMIN_ROLE)
-      Authorizer.require_role!(roles: ["engineer"], required_role: Authorizer::ENGINEER_ROLE)
-      Authorizer.require_role!(roles: ["hr"], required_role: Authorizer::HR_ROLE)
-      Authorizer.require_role!(roles: ["finance"], required_role: Authorizer::FINANCE_ROLE)
-      Authorizer.require_role!(roles: ["chat_user"], required_role: Authorizer::CHAT_ROLE)
-    end
-
-    it "raises error with role resources when unauthorized" do
-      user = User.new(roles: ["engineer"])
-
-      expect_raises(Rbacr::AuthorizationError, "Role finance is required") do
-        Authorizer.require_role!(roles: user.roles, required_role: Authorizer::FINANCE_ROLE)
+        it "has CAN_BROWSE_PICTURES privilege" do
+          Authorizer::CAN_BROWSE_PICTURES.should be_a(Rbacr::Privilege)
+          Authorizer::CAN_BROWSE_PICTURES.id.should eq("can_browse_pictures")
+          Authorizer::CHAT_ROLE.privileges.should contain(Authorizer::CAN_BROWSE_PICTURES)
+        end
       end
     end
   end

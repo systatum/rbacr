@@ -26,32 +26,25 @@ class SingleRoleUser
   end
 end
 
-class CustomModel
-  property name : String
-
-  def initialize(@name : String)
-  end
-end
-
 class Authorizer
   include Rbacr::Definer
 
-  CREATE   = act(action: :create)
-  READ     = act(action: :read)
-  DELETE   = act(action: :delete)
-  LIST_ALL = act(action: :list_all)
-  CHAT     = act(action: :chat)
-  BROWSE   = act(action: :browse)
+  CREATE   = act(:create)
+  READ     = act(:read)
+  DELETE   = act(:delete)
+  LIST_ALL = act(:list_all)
+  CHAT     = act(:chat)
+  BROWSE   = act(:browse)
 
-  CAN_CREATE_CANDIDATE = can(act: CREATE, resource: Candidate)
-  CAN_DELETE_CANDIDATE = can(act: DELETE, resource: Candidate)
-  CAN_CREATE_BILLING   = can(act: CREATE, resource: Billing)
-  CAN_CHAT_CHATGPT     = can(act: CHAT, resource: AI::ChatGPT)
-  CAN_BROWSE_PICTURES  = can(act: BROWSE, resource: :pictures)
+  CAN_CREATE_CANDIDATE = can(CREATE, Candidate)
+  CAN_DELETE_CANDIDATE = can(DELETE, Candidate)
+  CAN_CREATE_BILLING   = can(CREATE, Billing)
+  CAN_CHAT_CHATGPT     = can(CHAT, AI::ChatGPT)
+  CAN_BROWSE_PICTURES  = can(BROWSE, :pictures)
 
-  SUPER_ADMIN_ROLE = role(name: :super_admin, privileges: [CAN_CREATE_CANDIDATE, CAN_DELETE_CANDIDATE, CAN_CREATE_BILLING])
-  ENGINEER_ROLE    = role(name: :engineer, privileges: [CAN_CREATE_CANDIDATE])
-  HR_ROLE          = role(name: :hr, privileges: [CAN_CREATE_CANDIDATE, CAN_DELETE_CANDIDATE])
-  FINANCE_ROLE     = role(name: :finance, privileges: [CAN_CREATE_BILLING])
-  CHAT_ROLE        = role(name: :chat_user, privileges: [CAN_CHAT_CHATGPT, CAN_BROWSE_PICTURES])
+  SUPER_ADMIN_ROLE = role(:super_admin, [CAN_CREATE_CANDIDATE, CAN_DELETE_CANDIDATE, CAN_CREATE_BILLING])
+  ENGINEER_ROLE    = role(:engineer, [CAN_CREATE_CANDIDATE])
+  HR_ROLE          = role(:hr, [CAN_CREATE_CANDIDATE, CAN_DELETE_CANDIDATE])
+  FINANCE_ROLE     = role(:finance, [CAN_CREATE_BILLING])
+  CHAT_ROLE        = role(:chat_user, [CAN_CHAT_CHATGPT, CAN_BROWSE_PICTURES])
 end

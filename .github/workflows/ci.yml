@@ -19,4 +19,4 @@ jobs:
       - name: Lint
         run: crystal tool format --check
       - name: Specs
-        run: crystal spec
+        run: crystal spec --verbose
