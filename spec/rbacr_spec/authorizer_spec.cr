@@ -2,23 +2,21 @@ require "../spec_helper"
 
 describe Rbacr::Authorizer do
   describe "#can?" do
-    context "when user has array of roles" do
-      it "works with user having array of roles" do
+    context "when user has a single role" do
+      it "works with a string-role" do
+        user = SingleRoleUser.new("finance")
+
+        Authorizer.can?(Authorizer::CREATE, Billing, user.role).should be_true
+        Authorizer.can?(Authorizer::CREATE, Candidate, user.role).should be_false
+      end
+
+      it "works with an array of roles" do
         user = User.new(roles: ["super_admin"])
         candidate = Candidate.new
 
         Authorizer.can?(Authorizer::CREATE, candidate, user.roles).should be_true
         Authorizer.can?(Authorizer::DELETE, candidate, user.roles).should be_true
         Authorizer.can?(Authorizer::BROWSE, :pictures, user.roles).should be_false
-      end
-    end
-
-    context "when user has single role" do
-      it "works with user having single role as string" do
-        user = SingleRoleUser.new("finance")
-
-        Authorizer.can?(Authorizer::CREATE, Billing, user.role).should be_true
-        Authorizer.can?(Authorizer::CREATE, Candidate, user.role).should be_false
       end
     end
 
@@ -42,7 +40,7 @@ describe Rbacr::Authorizer do
       end
     end
 
-    context "when checking with privilege resources" do
+    context "when checking with privilege objects" do
       it "works with privilege resources" do
         user = User.new(roles: ["engineer"])
 
@@ -75,7 +73,7 @@ describe Rbacr::Authorizer do
       end
     end
 
-    context "when using privilege resource" do
+    context "when using privilege object" do
       context "when user is authorized" do
         it "passes for authorized users" do
           user = User.new(roles: ["finance"])
