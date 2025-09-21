@@ -47,16 +47,16 @@ class Authorizer
     [CAN_CREATE_CANDIDATE, CAN_DELETE_CANDIDATE, CAN_CREATE_BILLING],
     Rbacr::Tier::DIRECTOR
   )
-  ENGINEER_ROLE    = role(:engineer, [CAN_CREATE_CANDIDATE])
-  HR_ROLE          = role(
+  ENGINEER_ROLE = role(:engineer, [CAN_CREATE_CANDIDATE])
+  HR_ROLE       = role(
     :hr,
     [CAN_CREATE_CANDIDATE, CAN_DELETE_CANDIDATE],
     Rbacr::Tier::MANAGER
   )
-  FINANCE_ROLE     = role(
+  FINANCE_ROLE = role(
     :finance,
     [CAN_CREATE_BILLING],
     Rbacr::Tier::MANAGER
   )
-  CHAT_ROLE        = role(:chat_user, [CAN_CHAT_CHATGPT, CAN_BROWSE_PICTURES])
+  CHAT_ROLE = role(:chat_user, [CAN_CHAT_CHATGPT, CAN_BROWSE_PICTURES])
 end

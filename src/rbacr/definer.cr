@@ -1,5 +1,6 @@
 module Rbacr::Definer
   ROLE_MAP = Hash(String, Rbacr::Role).new
+  @@_privileges : Set(String) = Set(String).new
 
   macro included
     extend Rbacr::DSL
@@ -8,7 +9,7 @@ module Rbacr::Definer
     def self.role(
       name : Symbol,
       privileges : Array(Rbacr::Privilege) = [] of Rbacr::Privilege,
-      tier : Rbacr::Tier = Rbacr::Tier::WORKER
+      tier : Rbacr::Tier = Rbacr::Tier::WORKER,
     ) : Rbacr::Role
       role = Rbacr::Role.new(name: name, tier: tier, privileges: privileges)
       Rbacr::Definer::ROLE_MAP[name.to_s] = role

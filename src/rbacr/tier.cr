@@ -16,7 +16,8 @@ enum Rbacr::Tier
   end
 
   def managerial? : Bool
-    director? || manager?  end
+    director? || manager?
+  end
 
   def >=(other : Tier) : Bool
     self.value <= other.value

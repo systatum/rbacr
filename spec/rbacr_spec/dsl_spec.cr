@@ -21,26 +21,26 @@ describe Rbacr::DSL do
   describe "#can" do
     it "creates a Privilege with act and resource" do
       create_act = Authorizer.act(:create)
-      privilege = Authorizer.can(create_act, Candidate)
+      privilege = Authorizer.can(create_act, User)
 
       privilege.should be_a(Rbacr::Privilege)
-      privilege.id.should eq("can_create_candidate")
+      privilege.id.should eq("can_create_user")
     end
 
     it "works with different resource types" do
       browse_act = Authorizer.act(:browse)
-      symbol_privilege = Authorizer.can(browse_act, :pictures)
-      class_privilege = Authorizer.can(browse_act, Billing)
+      symbol_privilege = Authorizer.can(browse_act, :videos)
+      class_privilege = Authorizer.can(browse_act, User)
 
-      symbol_privilege.id.should eq("can_browse_pictures")
-      class_privilege.id.should eq("can_browse_billing")
+      symbol_privilege.id.should eq("can_browse_videos")
+      class_privilege.id.should eq("can_browse_user")
     end
 
     it "works with namespaced classes" do
       chat_act = Authorizer.act(:chat)
-      privilege = Authorizer.can(chat_act, AI::ChatGPT)
+      privilege = Authorizer.can(chat_act, SingleRoleUser)
 
-      privilege.id.should eq("can_chat_ai_chatgpt")
+      privilege.id.should eq("can_chat_singleroleuser")
     end
   end
 end

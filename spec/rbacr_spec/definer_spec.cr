@@ -77,7 +77,7 @@ describe Rbacr::Definer do
   describe "#role" do
     context "when creating a new role" do
       it "creates a role with name and privileges" do
-        create_privilege = Authorizer.can(Authorizer.act(:create), Candidate)
+        create_privilege = Authorizer.can(Authorizer.act(:create), :article)
         test_role = Authorizer.role(:test_role, [create_privilege])
 
         test_role.should be_a(Rbacr::Role)
@@ -86,8 +86,8 @@ describe Rbacr::Definer do
       end
 
       it "creates role with multiple privileges" do
-        create_privilege = Authorizer.can(Authorizer.act(:create), Candidate)
-        delete_privilege = Authorizer.can(Authorizer.act(:delete), Candidate)
+        create_privilege = Authorizer.can(Authorizer.act(:create), :comment)
+        delete_privilege = Authorizer.can(Authorizer.act(:delete), :comment)
         multi_role = Authorizer.role(:multi_role, [create_privilege, delete_privilege])
 
         multi_role.privileges.size.should eq(2)
