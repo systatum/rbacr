@@ -1,0 +1,13 @@
+name: rbacr
+version: 0.1.0
+
+authors:
+  - Gilberdi <gilberdising012@gmail.com>
+  - Adam <adam@systatum.com>
+
+description: |
+  A Crystal library for Role-Based Access Control (RBAC) system.
+
+crystal: ~> 1.0
+
+license: MIT
