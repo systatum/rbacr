@@ -2,8 +2,8 @@ name: rbacr
 version: 0.1.0
 
 authors:
-  - Adam <adam.pahlevi@gmail.com>
   - Gilberdi <gilberdising012@gmail.com>
+  - Adam <adam@systatum.com>
 
 description: |
   A Crystal library for Role-Based Access Control (RBAC) system.
