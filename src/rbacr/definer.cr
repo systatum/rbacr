@@ -17,6 +17,7 @@ module Rbacr::Definer
     end
 
     def self.role_of(name : String | Symbol) : Rbacr::Role
+      auto_register_role_constants
       key = name.to_s
       Rbacr::Definer::ROLE_MAP[key]? || raise Rbacr::UnknownRoleError.new(key)
     end
@@ -40,5 +41,13 @@ module Rbacr::Definer
     def self.worker_roles : Array(Rbacr::Role)
       find_roles_by_tier(Rbacr::Tier::WORKER)
     end
+  end
+
+  macro auto_register_role_constants
+    {% for constant in @type.constants %}
+      {% if constant.stringify.ends_with?("_ROLE") %}
+        {{ constant.id }}
+      {% end %}
+    {% end %}
   end
 end
