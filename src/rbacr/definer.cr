@@ -25,22 +25,6 @@ module Rbacr::Definer
     def self.privileges_of(name : String | Symbol) : Array(Rbacr::Privilege)
       role_of(name).privileges
     end
-
-    def self.find_roles_by_tier(tier : Rbacr::Tier) : Array(Rbacr::Role)
-      Rbacr::Definer::ROLE_MAP.values.select { |role| role.tier == tier }
-    end
-
-    def self.director_roles : Array(Rbacr::Role)
-      find_roles_by_tier(Rbacr::Tier::DIRECTOR)
-    end
-
-    def self.manager_roles : Array(Rbacr::Role)
-      find_roles_by_tier(Rbacr::Tier::MANAGER)
-    end
-
-    def self.worker_roles : Array(Rbacr::Role)
-      find_roles_by_tier(Rbacr::Tier::WORKER)
-    end
   end
 
   macro auto_register_role_constants

@@ -99,4 +99,20 @@ module Rbacr::Authorizer
       role.privileges.includes?(privilege)
     end
   end
+
+  def find_roles_by_tier(tier : Rbacr::Tier) : Array(Rbacr::Role)
+    Rbacr::Definer::ROLE_MAP.values.select { |role| role.tier == tier }
+  end
+
+  def director_roles : Array(Rbacr::Role)
+    find_roles_by_tier(Rbacr::Tier::DIRECTOR)
+  end
+
+  def manager_roles : Array(Rbacr::Role)
+    find_roles_by_tier(Rbacr::Tier::MANAGER)
+  end
+
+  def worker_roles : Array(Rbacr::Role)
+    find_roles_by_tier(Rbacr::Tier::WORKER)
+  end
 end
