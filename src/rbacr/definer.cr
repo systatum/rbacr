@@ -12,8 +12,7 @@ module Rbacr::Definer
     end
 
     def self.role_of(name : String | Symbol) : Rbacr::Role
-      key = name.to_s
-      Rbacr::Definer::ROLE_MAP[key]? || raise Rbacr::UnknownRoleError.new(key)
+      get_role!(name)
     end
 
     def self.privileges_of(name : String | Symbol) : Array(Rbacr::Privilege)
