@@ -84,7 +84,7 @@ Privileges combine an action with a resource:
 CAN_CREATE_CANDIDATE = can(CREATE, Candidate)
 # Privilege#id -> "can_create_candidate" (auto-generated)
 
-# Privilege with symbol resource  
+# Privilege with symbol resource
 CAN_BROWSE_PICTURES = can(BROWSE, :pictures)
 # Privilege#id -> "can_browse_pictures"
 
