@@ -18,3 +18,9 @@ class Rbacr::AuthorizationError < Rbacr::Error
     super(message)
   end
 end
+
+class Rbacr::DuplicatePrivilegeError < Rbacr::Error
+  def initialize(privilege_id : String)
+    super("Duplicate privilege definition: #{privilege_id}")
+  end
+end

@@ -76,3 +76,16 @@ describe Rbacr::UnknownPrivilegeError do
     end
   end
 end
+
+describe Rbacr::DuplicatePrivilegeError do
+  context "when raised by can" do
+    it "raises DuplicatePrivilegeError when defining duplicate privileges" do
+      create_act = TestDefiner.act(:test_create)
+
+      expect_raises(Rbacr::DuplicatePrivilegeError, "can_test_create_test_resource") do
+        TestDefiner.can(create_act, :test_resource)
+        TestDefiner.can(create_act, :test_resource)
+      end
+    end
+  end
+end

@@ -1,8 +1,13 @@
 class Rbacr::Role
   getter name : Symbol
   getter privileges : Array(Rbacr::Privilege)
+  getter tier : Rbacr::Tier
 
-  def initialize(@name : Symbol, @privileges : Array(Rbacr::Privilege))
+  def initialize(
+    @name : Symbol,
+    @privileges : Array(Rbacr::Privilege) = [] of Rbacr::Privilege,
+    @tier : Rbacr::Tier = Rbacr::Tier::WORKER,
+  )
   end
 
   def has_privilege?(privilege : Rbacr::Privilege) : Bool
@@ -22,8 +27,24 @@ class Rbacr::Role
     @privileges.map(&.id)
   end
 
+  def director? : Bool
+    @tier.director?
+  end
+
+  def manager? : Bool
+    @tier.manager?
+  end
+
+  def worker? : Bool
+    @tier.worker?
+  end
+
+  def managerial? : Bool
+    @tier.managerial?
+  end
+
   def to_s(io : IO) : Nil
-    io << "Role(#{@name}: #{privilege_ids})"
+    io << "Role(#{@name}[#{@tier}]: #{privilege_ids})"
   end
 
   def ==(other : Rbacr::Role) : Bool

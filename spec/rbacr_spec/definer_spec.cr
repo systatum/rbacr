@@ -77,8 +77,8 @@ describe Rbacr::Definer do
   describe "#role" do
     context "when creating a new role" do
       it "creates a role with name and privileges" do
-        create_privilege = Authorizer.can(Authorizer.act(:create), Candidate)
-        test_role = Authorizer.role(:test_role, [create_privilege])
+        create_privilege = TestDefiner.can(TestDefiner.act(:create), :article)
+        test_role = TestDefiner.role(:test_role, [create_privilege])
 
         test_role.should be_a(Rbacr::Role)
         test_role.name.should eq(:test_role)
@@ -86,9 +86,9 @@ describe Rbacr::Definer do
       end
 
       it "creates role with multiple privileges" do
-        create_privilege = Authorizer.can(Authorizer.act(:create), Candidate)
-        delete_privilege = Authorizer.can(Authorizer.act(:delete), Candidate)
-        multi_role = Authorizer.role(:multi_role, [create_privilege, delete_privilege])
+        create_privilege = TestDefiner.can(TestDefiner.act(:create), :comment)
+        delete_privilege = TestDefiner.can(TestDefiner.act(:delete), :comment)
+        multi_role = TestDefiner.role(:multi_role, [create_privilege, delete_privilege])
 
         multi_role.privileges.size.should eq(2)
         multi_role.privileges.should contain(create_privilege)
@@ -96,34 +96,34 @@ describe Rbacr::Definer do
       end
 
       it "creates role with empty privileges array" do
-        empty_role = Authorizer.role(:empty_role, [] of Rbacr::Privilege)
+        empty_role = TestDefiner.role(:empty_role, [] of Rbacr::Privilege)
 
         empty_role.privileges.size.should eq(0)
         empty_role.name.should eq(:empty_role)
       end
 
       it "accepts symbol role names" do
-        privilege = Authorizer.can(Authorizer.act(:read), Billing)
-        symbol_role = Authorizer.role(:symbol_role, [privilege])
+        privilege = TestDefiner.can(TestDefiner.act(:read), Billing)
+        symbol_role = TestDefiner.role(:symbol_role, [privilege])
 
         symbol_role.name.should eq(:symbol_role)
         symbol_role.privileges.should contain(privilege)
       end
 
       it "creates role that can be used for authorization" do
-        privilege = Authorizer.can(Authorizer.act(:manage), :documents)
-        manager_role = Authorizer.role(:document_manager, [privilege])
+        privilege = TestDefiner.can(TestDefiner.act(:manage), :documents)
+        manager_role = TestDefiner.role(:document_manager, [privilege])
 
-        manager_role.has_privilege?(Authorizer.act(:manage), :documents).should be_true
-        manager_role.has_privilege?(Authorizer.act(:delete), :documents).should be_false
+        manager_role.has_privilege?(TestDefiner.act(:manage), :documents).should be_true
+        manager_role.has_privilege?(TestDefiner.act(:delete), :documents).should be_false
       end
     end
 
     context "when working with existing role constants" do
       it "matches the behavior of predefined roles" do
-        create_candidate = Authorizer::CAN_CREATE_CANDIDATE
-        delete_candidate = Authorizer::CAN_DELETE_CANDIDATE
-        custom_hr = Authorizer.role(:custom_hr, [create_candidate, delete_candidate])
+        create_candidate = TestDefiner.can(TestDefiner.act(:create), Candidate)
+        delete_candidate = TestDefiner.can(TestDefiner.act(:delete), Candidate)
+        custom_hr = TestDefiner.role(:custom_hr, [create_candidate, delete_candidate])
 
         custom_hr.privileges.size.should eq(2)
         custom_hr.privileges.should contain(create_candidate)
