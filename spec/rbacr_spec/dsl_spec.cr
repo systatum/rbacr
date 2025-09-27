@@ -20,25 +20,25 @@ describe Rbacr::DSL do
 
   describe "#can" do
     it "creates a Privilege with act and resource" do
-      create_act = Authorizer.act(:create)
-      privilege = Authorizer.can(create_act, User)
+      create_act = TestDefiner.act(:create)
+      privilege = TestDefiner.can(create_act, User)
 
       privilege.should be_a(Rbacr::Privilege)
       privilege.id.should eq("can_create_user")
     end
 
     it "works with different resource types" do
-      browse_act = Authorizer.act(:browse)
-      symbol_privilege = Authorizer.can(browse_act, :videos)
-      class_privilege = Authorizer.can(browse_act, User)
+      browse_act = TestDefiner.act(:browse)
+      symbol_privilege = TestDefiner.can(browse_act, :videos)
+      class_privilege = TestDefiner.can(browse_act, User)
 
       symbol_privilege.id.should eq("can_browse_videos")
       class_privilege.id.should eq("can_browse_user")
     end
 
     it "works with namespaced classes" do
-      chat_act = Authorizer.act(:chat)
-      privilege = Authorizer.can(chat_act, SingleRoleUser)
+      chat_act = TestDefiner.act(:chat)
+      privilege = TestDefiner.can(chat_act, SingleRoleUser)
 
       privilege.id.should eq("can_chat_singleroleuser")
     end

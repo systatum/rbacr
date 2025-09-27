@@ -26,6 +26,10 @@ class SingleRoleUser
   end
 end
 
+class TestDefiner
+  include Rbacr::Definer
+end
+
 class Authorizer
   include Rbacr::Definer
 
