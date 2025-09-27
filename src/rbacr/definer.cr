@@ -11,9 +11,12 @@ module Rbacr::Definer
       privileges : Array(Rbacr::Privilege) = [] of Rbacr::Privilege,
       tier : Rbacr::Tier = Rbacr::Tier::WORKER,
     ) : Rbacr::Role
-      role = Rbacr::Role.new(name: name, tier: tier, privileges: privileges)
-      Rbacr::Definer::ROLE_MAP[name.to_s] = role
-      role
+      key = name.to_s
+      Rbacr::Definer::ROLE_MAP.fetch(key) do
+        role = Rbacr::Role.new(name, privileges, tier)
+        Rbacr::Definer::ROLE_MAP[key] = role
+        role
+      end
     end
 
     def self.role_of(name : String | Symbol) : Rbacr::Role
