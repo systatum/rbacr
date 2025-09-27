@@ -126,10 +126,10 @@ describe Rbacr::Authorizer do
     end
 
     it "returns empty array when no roles exist for a tier" do
-      original_roles = Rbacr::Definer::ROLE_MAP.dup
+      original_roles = Authorizer::ROLE_MAP.dup
 
       begin
-        Rbacr::Definer::ROLE_MAP.clear
+        Authorizer::ROLE_MAP.clear
 
         Authorizer.find_roles_by_tier(Rbacr::Tier::DIRECTOR).should eq([] of Rbacr::Role)
         Authorizer.find_roles_by_tier(Rbacr::Tier::MANAGER).should eq([] of Rbacr::Role)
@@ -139,7 +139,7 @@ describe Rbacr::Authorizer do
         Authorizer.manager_roles.should eq([] of Rbacr::Role)
         Authorizer.worker_roles.should eq([] of Rbacr::Role)
       ensure
-        original_roles.each { |k, v| Rbacr::Definer::ROLE_MAP[k] = v }
+        original_roles.each { |k, v| Authorizer::ROLE_MAP[k] = v }
       end
     end
   end
