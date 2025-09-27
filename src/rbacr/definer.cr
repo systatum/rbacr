@@ -17,21 +17,21 @@ module Rbacr::Definer
     end
 
     def self.role_of(name : String | Symbol) : Rbacr::Role
-      auto_register_role_constants
-      key = name.to_s
-      Rbacr::Definer::ROLE_MAP[key]? || raise Rbacr::UnknownRoleError.new(key)
+      get_role!(name)
     end
 
     def self.privileges_of(name : String | Symbol) : Array(Rbacr::Privilege)
       role_of(name).privileges
     end
+
+    macro finished
+      evaluate_constants
+    end
   end
 
-  macro auto_register_role_constants
+  macro evaluate_constants
     {% for constant in @type.constants %}
-      {% if constant.stringify.ends_with?("_ROLE") %}
-        {{ constant.id }}
-      {% end %}
+      {{ constant.id }}
     {% end %}
   end
 end

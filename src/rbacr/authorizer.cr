@@ -49,16 +49,22 @@ module Rbacr::Authorizer
     end
   end
 
-  private def get_role(role_name : String | Symbol) : Rbacr::Role
+  private def get_role(role_name : String | Symbol) : Rbacr::Role | Nil
     role_str = role_name.to_s
-    Rbacr::Definer::ROLE_MAP[role_str]? || raise Rbacr::UnknownRoleError.new(role_str)
+    Rbacr::Definer::ROLE_MAP.fetch(role_str, nil)
+  end
+
+  private def get_role!(role_name : String | Symbol) : Rbacr::Role
+    role = get_role(role_name)
+    raise Rbacr::UnknownRoleError.new(role_name) unless role
+    role
   end
 
   def can?(act : Rbacr::Act, resource, roles : String | Array(String)) : Bool
     role_list = Rbacr::Util.normalize_roles(roles)
 
     role_list.any? do |role_name|
-      role = Rbacr::Definer::ROLE_MAP[role_name.to_s]?
+      role = get_role(role_name)
       role ? role.has_privilege?(act, resource) : false
     end
   end
@@ -67,7 +73,7 @@ module Rbacr::Authorizer
     role_list = Rbacr::Util.normalize_roles(roles)
     privilege_str = privilege_id.to_s
     role_list.any? do |role_name|
-      role = Rbacr::Definer::ROLE_MAP[role_name.to_s]?
+      role = get_role(role_name)
       role ? role.has_privilege?(privilege_str) : false
     end
   end
@@ -76,7 +82,7 @@ module Rbacr::Authorizer
     role_list = Rbacr::Util.normalize_roles(roles)
 
     role_list.any? do |role_name|
-      role = Rbacr::Definer::ROLE_MAP[role_name.to_s]?
+      role = get_role(role_name)
       role ? role.has_privilege?(privilege) : false
     end
   end
