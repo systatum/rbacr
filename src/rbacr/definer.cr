@@ -6,7 +6,7 @@ module Rbacr::Definer
     ROLE_MAP = Hash(String, Rbacr::Role).new
     @@_privileges : Set(String) = Set(String).new
 
-    def self.get_role_map
+    def self.role_map
       ROLE_MAP
     end
 
