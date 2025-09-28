@@ -26,6 +26,10 @@ class SingleRoleUser
   end
 end
 
+class TestDefiner
+  include Rbacr::Definer
+end
+
 class Authorizer
   include Rbacr::Definer
 
@@ -42,9 +46,21 @@ class Authorizer
   CAN_CHAT_CHATGPT     = can(CHAT, AI::ChatGPT)
   CAN_BROWSE_PICTURES  = can(BROWSE, :pictures)
 
-  SUPER_ADMIN_ROLE = role(:super_admin, [CAN_CREATE_CANDIDATE, CAN_DELETE_CANDIDATE, CAN_CREATE_BILLING])
-  ENGINEER_ROLE    = role(:engineer, [CAN_CREATE_CANDIDATE])
-  HR_ROLE          = role(:hr, [CAN_CREATE_CANDIDATE, CAN_DELETE_CANDIDATE])
-  FINANCE_ROLE     = role(:finance, [CAN_CREATE_BILLING])
-  CHAT_ROLE        = role(:chat_user, [CAN_CHAT_CHATGPT, CAN_BROWSE_PICTURES])
+  SUPER_ADMIN_ROLE = role(
+    :super_admin,
+    [CAN_CREATE_CANDIDATE, CAN_DELETE_CANDIDATE, CAN_CREATE_BILLING],
+    Rbacr::Tier::DIRECTOR
+  )
+  ENGINEER_ROLE = role(:engineer, [CAN_CREATE_CANDIDATE])
+  HR_ROLE       = role(
+    :hr,
+    [CAN_CREATE_CANDIDATE, CAN_DELETE_CANDIDATE],
+    Rbacr::Tier::MANAGER
+  )
+  FINANCE_ROLE = role(
+    :finance,
+    [CAN_CREATE_BILLING],
+    Rbacr::Tier::MANAGER
+  )
+  CHAT_ROLE = role(:chat_user, [CAN_CHAT_CHATGPT, CAN_BROWSE_PICTURES])
 end

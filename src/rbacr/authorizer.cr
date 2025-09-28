@@ -51,7 +51,7 @@ module Rbacr::Authorizer
 
   private def get_role(role_name : String | Symbol) : Rbacr::Role | Nil
     role_str = role_name.to_s
-    Rbacr::Definer::ROLE_MAP.fetch(role_str, nil)
+    role_map.fetch(role_str, nil)
   end
 
   private def get_role!(role_name : String | Symbol) : Rbacr::Role
@@ -88,21 +88,37 @@ module Rbacr::Authorizer
   end
 
   private def privilege_exists?(act : Rbacr::Act, resource) : Bool
-    Rbacr::Definer::ROLE_MAP.values.any? do |role|
+    role_map.values.any? do |role|
       role.privileges.any? { |p| p.matches?(act, resource) }
     end
   end
 
   private def privilege_exists?(privilege_id : String | Symbol) : Bool
     privilege_str = privilege_id.to_s
-    Rbacr::Definer::ROLE_MAP.values.any? do |role|
+    role_map.values.any? do |role|
       role.privileges.any? { |p| p.id == privilege_str }
     end
   end
 
   private def privilege_exists?(privilege : Rbacr::Privilege) : Bool
-    Rbacr::Definer::ROLE_MAP.values.any? do |role|
+    role_map.values.any? do |role|
       role.privileges.includes?(privilege)
     end
+  end
+
+  def find_roles_by_tier(tier : Rbacr::Tier) : Array(Rbacr::Role)
+    role_map.values.select { |role| role.tier == tier }
+  end
+
+  def director_roles : Array(Rbacr::Role)
+    find_roles_by_tier(Rbacr::Tier::DIRECTOR)
+  end
+
+  def manager_roles : Array(Rbacr::Role)
+    find_roles_by_tier(Rbacr::Tier::MANAGER)
+  end
+
+  def worker_roles : Array(Rbacr::Role)
+    find_roles_by_tier(Rbacr::Tier::WORKER)
   end
 end

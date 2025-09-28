@@ -103,4 +103,76 @@ describe Rbacr::Authorizer do
       end
     end
   end
+
+  describe "#find_roles_by_tier" do
+    it "returns director roles" do
+      director_roles = Authorizer.find_roles_by_tier(Rbacr::Tier::DIRECTOR)
+      director_roles.size.should eq(1)
+      director_roles.should contain(Authorizer::SUPER_ADMIN_ROLE)
+    end
+
+    it "returns manager roles" do
+      manager_roles = Authorizer.find_roles_by_tier(Rbacr::Tier::MANAGER)
+      manager_roles.size.should eq(2)
+      manager_roles.should contain(Authorizer::HR_ROLE)
+      manager_roles.should contain(Authorizer::FINANCE_ROLE)
+    end
+
+    it "returns worker roles" do
+      worker_roles = Authorizer.find_roles_by_tier(Rbacr::Tier::WORKER)
+      worker_roles.size.should eq(2)
+      worker_roles.should contain(Authorizer::ENGINEER_ROLE)
+      worker_roles.should contain(Authorizer::CHAT_ROLE)
+    end
+
+    it "returns empty array when no roles exist for a tier" do
+      original_roles = Authorizer::ROLE_MAP.dup
+
+      begin
+        Authorizer::ROLE_MAP.clear
+
+        Authorizer.find_roles_by_tier(Rbacr::Tier::DIRECTOR).should eq([] of Rbacr::Role)
+        Authorizer.find_roles_by_tier(Rbacr::Tier::MANAGER).should eq([] of Rbacr::Role)
+        Authorizer.find_roles_by_tier(Rbacr::Tier::WORKER).should eq([] of Rbacr::Role)
+
+        Authorizer.director_roles.should eq([] of Rbacr::Role)
+        Authorizer.manager_roles.should eq([] of Rbacr::Role)
+        Authorizer.worker_roles.should eq([] of Rbacr::Role)
+      ensure
+        original_roles.each { |k, v| Authorizer::ROLE_MAP[k] = v }
+      end
+    end
+  end
+
+  describe "#director_roles" do
+    it "returns all director tier roles" do
+      director_roles = Authorizer.director_roles
+      director_roles.size.should eq(1)
+      director_roles.first.should eq(Authorizer::SUPER_ADMIN_ROLE)
+      director_roles.first.tier.should eq(Rbacr::Tier::DIRECTOR)
+      director_roles.all?(&.director?).should be_true
+    end
+  end
+
+  describe "#manager_roles" do
+    it "returns all manager tier roles" do
+      manager_roles = Authorizer.manager_roles
+      manager_roles.size.should eq(2)
+      manager_roles.should contain(Authorizer::HR_ROLE)
+      manager_roles.should contain(Authorizer::FINANCE_ROLE)
+      manager_roles.all?(&.manager?).should be_true
+      manager_roles.all?(&.managerial?).should be_true
+    end
+  end
+
+  describe "#worker_roles" do
+    it "returns all worker tier roles" do
+      worker_roles = Authorizer.worker_roles
+      worker_roles.size.should eq(2)
+      worker_roles.should contain(Authorizer::ENGINEER_ROLE)
+      worker_roles.should contain(Authorizer::CHAT_ROLE)
+      worker_roles.all?(&.worker?).should be_true
+      worker_roles.none?(&.managerial?).should be_true
+    end
+  end
 end

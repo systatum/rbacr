@@ -9,6 +9,20 @@ describe Rbacr::Role do
       role.name.should eq(:engineer)
       role.privileges.should eq([privilege1])
     end
+
+    it "creates a role with default WORKER tier when tier is not specified" do
+      create_act = Rbacr::Act.new(:create)
+      privilege1 = Rbacr::Privilege.new(create_act, "candidate")
+      role = Rbacr::Role.new(:engineer, [privilege1])
+      role.tier.should eq(Rbacr::Tier::WORKER)
+    end
+
+    it "creates a role with specified tier" do
+      create_act = Rbacr::Act.new(:create)
+      privilege1 = Rbacr::Privilege.new(create_act, "candidate")
+      role = Rbacr::Role.new(:admin, [privilege1], Rbacr::Tier::DIRECTOR)
+      role.tier.should eq(Rbacr::Tier::DIRECTOR)
+    end
   end
 
   describe "#has_privilege?" do
@@ -74,11 +88,11 @@ describe Rbacr::Role do
   end
 
   describe "#to_s" do
-    it "includes role name and privilege IDs in string representation" do
+    it "includes role name, tier, and privilege IDs in string representation" do
       create_act = Rbacr::Act.new(:create)
       privilege1 = Rbacr::Privilege.new(create_act, "candidate")
       role = Rbacr::Role.new(:hr, [privilege1])
-      role.to_s.should contain("Role(hr:")
+      role.to_s.should contain("Role(hr[WORKER]:")
       role.to_s.should contain("can_create_candidate")
     end
   end
@@ -100,6 +114,96 @@ describe Rbacr::Role do
       role1 = Rbacr::Role.new(:admin, [privilege1])
       role2 = Rbacr::Role.new(:user, [privilege1])
       (role1 == role2).should be_false
+    end
+  end
+
+  describe "#director?" do
+    it "returns true for DIRECTOR tier roles" do
+      role = Rbacr::Role.new(:super_admin, tier: Rbacr::Tier::DIRECTOR)
+      role.director?.should be_true
+    end
+
+    it "returns false for MANAGER tier roles" do
+      role = Rbacr::Role.new(:manager, tier: Rbacr::Tier::MANAGER)
+      role.director?.should be_false
+    end
+
+    it "returns false for WORKER tier roles" do
+      role = Rbacr::Role.new(:worker, tier: Rbacr::Tier::WORKER)
+      role.director?.should be_false
+    end
+  end
+
+  describe "#manager?" do
+    it "returns false for DIRECTOR tier roles" do
+      role = Rbacr::Role.new(:super_admin, tier: Rbacr::Tier::DIRECTOR)
+      role.manager?.should be_false
+    end
+
+    it "returns true for MANAGER tier roles" do
+      role = Rbacr::Role.new(:manager, tier: Rbacr::Tier::MANAGER)
+      role.manager?.should be_true
+    end
+
+    it "returns false for WORKER tier roles" do
+      role = Rbacr::Role.new(:worker, tier: Rbacr::Tier::WORKER)
+      role.manager?.should be_false
+    end
+  end
+
+  describe "#worker?" do
+    it "returns false for DIRECTOR tier roles" do
+      role = Rbacr::Role.new(:super_admin, tier: Rbacr::Tier::DIRECTOR)
+      role.worker?.should be_false
+    end
+
+    it "returns false for MANAGER tier roles" do
+      role = Rbacr::Role.new(:manager, tier: Rbacr::Tier::MANAGER)
+      role.worker?.should be_false
+    end
+
+    it "returns true for WORKER tier roles" do
+      role = Rbacr::Role.new(:worker, tier: Rbacr::Tier::WORKER)
+      role.worker?.should be_true
+    end
+
+    it "returns true for roles with default tier (WORKER)" do
+      role = Rbacr::Role.new(:default_role)
+      role.worker?.should be_true
+    end
+  end
+
+  describe "#managerial?" do
+    it "returns true for DIRECTOR tier roles" do
+      role = Rbacr::Role.new(:super_admin, tier: Rbacr::Tier::DIRECTOR)
+      role.managerial?.should be_true
+    end
+
+    it "returns true for MANAGER tier roles" do
+      role = Rbacr::Role.new(:manager, tier: Rbacr::Tier::MANAGER)
+      role.managerial?.should be_true
+    end
+
+    it "returns false for WORKER tier roles" do
+      role = Rbacr::Role.new(:worker, tier: Rbacr::Tier::WORKER)
+      role.managerial?.should be_false
+    end
+
+    it "returns false for roles with default tier (WORKER)" do
+      role = Rbacr::Role.new(:default_role)
+      role.managerial?.should be_false
+    end
+  end
+
+  describe "#tier" do
+    it "has getter for tier" do
+      role = Rbacr::Role.new(:test_role, tier: Rbacr::Tier::MANAGER)
+      role.tier.should eq(Rbacr::Tier::MANAGER)
+    end
+
+    it "defaults to WORKER tier when not specified" do
+      role = Rbacr::Role.new(:test_role)
+      role.tier.should eq(Rbacr::Tier::WORKER)
     end
   end
 end
